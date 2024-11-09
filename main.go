@@ -1,31 +1,31 @@
 package main
 
 import (
-	"fmt"
-	"io"
 	"log"
+	"micro-service-app/handlers"
 	"net/http"
+	"os"
 )
 
 func main() {
 
 	// HandleFunc is a convenience method to register a function to a path on DefaultServeMux
-	http.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
-		log.Println("Hello World")
-		d, err := io.ReadAll(r.Body)
-		if err != nil {
-			http.Error(rw, "Oops", http.StatusBadRequest)
-			return
-		}
+	// Instead of DefaltServeMux, create a custom servemux server
 
-		//log.Printf("Data %s\n", d)
-		fmt.Fprintf(rw, "Hello %s", d)
-	})
+	// Logger reference
+	l := log.New(os.Stdout, "product-api", log.LstdFlags)
 
-	http.HandleFunc("/goodbye", func(http.ResponseWriter, *http.Request) {
-		log.Println("Goodbye World")
+	// Create handler references
+	hh := handlers.NewHello(l)
+	gh := handlers.NewGoodbye(l)
 
-	})
+	// Create a new servemux server
+	sm := http.NewServeMux()
 
-	http.ListenAndServe("192.168.122.17:9090", nil)
+	// Register the new handlers with servemux server
+	sm.Handle("/", hh)
+	sm.Handle("/goodbye", gh)
+
+	// Bind address to the newly creater servemux server
+	http.ListenAndServe("192.168.122.17:9090", sm)
 }
