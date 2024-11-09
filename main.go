@@ -47,15 +47,16 @@ func main() {
 		}
 	}()
 
-	// Use os signal package to register notification of certian signals
-	// Create a channel to recieve a signal
-	sigChan := make(chan os.Signal)
+	// Set up channel on which to send signal notifications.
+	// We must use a buffered channel or risk missing the signal
+	// if we're not ready to receive when the signal is sent.
+	sigChan := make(chan os.Signal, 1)
 	// Broadcast a message on this channel wheneven an operating system (os) Interrupt or Kill command is received
 	signal.Notify(sigChan, os.Interrupt)
 	// Register for signal
 	signal.Notify(sigChan, os.Kill)
 
-	// Reading from a channel will block until there's a message available to be consumed
+	// Block until any signal is received
 	sig := <-sigChan
 	l.Println("Recieved terminate, graceful shutdown", sig)
 
